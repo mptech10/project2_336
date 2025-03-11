@@ -1,12 +1,6 @@
 import socket
 import sys
 
-# k fixed mapping (for local testing only)
-TLD_SERVERS = {
-    "com": ("localhost", 45001),  # TS1
-    "edu": ("localhost", 45002)   # TS2
-}
-
 def send_query(server_host, port, domain_name, query_type, query_id):
     """Send a DNS query to a specific server."""
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client_socket:
@@ -17,17 +11,25 @@ def send_query(server_host, port, domain_name, query_type, query_id):
 
 def iterative_resolution(root_server, port, domain_name, query_id):
     """Iteratively resolve domain names."""
-    domain_parts = domain_name.split('.')
-    tld = domain_parts[-1]  
+    response = send_query(root_server, port, domain_name, "it", query_id)
+    parts = response.split()
 
+    if len(parts) == 5:
+        _, domain, tld_server, query_id, flag = parts
 
-    if tld in TLD_SERVERS:
-        server_host, server_port = TLD_SERVERS[tld]
-        #print(f"Using test TLD server {server_host}:{server_port}")  # Debug print
+        if flag == "ns":
+            #extract the TLD's server's host name and port and send query to that server instead 
+            tld_hostname, tld_port = tld_server.split(":")
+            tld_port = int(tld_port)
+
+            return send_query(tld_hostname, tld_port, domain_name, "it", query_id)
+        else:
+            # RS responds directly here 
+            return response 
     else:
-        server_host, server_port = root_server, port  # Default to RS
+        #if response has less than 5 parts it is invalid 
+        return "1 {domain_name} 0.0.0.0 {query_id} nx"
 
-    return send_query(server_host, server_port, domain_name, "it", query_id)
 
 
 def main():
