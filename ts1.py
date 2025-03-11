@@ -36,7 +36,7 @@ def main():
     ts_database = load_ts_database("ts1database.txt")
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as server_socket:
-        server_socket.bind(("localhost", port))
+        server_socket.bind(("0.0.0.0", port))
         print(f"TLD Server 1 (.com) running on port {port}...")
 
         while True:
