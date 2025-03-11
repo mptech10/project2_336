@@ -19,7 +19,8 @@ def handle_request(data, client_address, server_socket, ts_database):
 
     _, domain, query_id, _ = parts
 
-    if domain in ts_database:
+    #handling case insensitivity 
+    if domain.lower() in ts_database:
         response = f"1 {domain} {ts_database[domain]} {query_id} aa"
     else:
         response = f"1 {domain} 0.0.0.0 {query_id} nx"

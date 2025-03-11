@@ -24,7 +24,7 @@ def handle_request(data, client_address, server_socket, rs_database):
 
     print(f"Received query for: {domain}, TLD: {tld}")  
 
-    if domain in rs_database:
+    if domain.lower() in rs_database:
         response = f"1 {domain} {rs_database[domain]} {query_id} aa"  
 
     elif tld in rs_database:
