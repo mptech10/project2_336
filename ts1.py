@@ -28,6 +28,9 @@ def handle_request(data, client_address, server_socket, ts_database):
     print(f"🔥 TS1 sending response: {response}")  
     server_socket.sendto(response.encode(), client_address)
 
+    with open("ts1responses.txt", "a") as output:
+        output.write(response + "\n")
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python3 ts1.py <port>")

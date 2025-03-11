@@ -36,7 +36,8 @@ def handle_request(data, client_address, server_socket, rs_database):
     print(f"Response: {response}")  
     server_socket.sendto(response.encode(), client_address)
 
-
+    with open("rsresponses.txt", "a") as output:
+        output.write(response + "\n")
 
 
 def main():
