@@ -28,7 +28,7 @@ def iterative_resolution(root_server, port, domain_name, query_id):
             return response 
     else:
         #if response has less than 5 parts it is invalid 
-        return "1 {domain_name} 0.0.0.0 {query_id} nx"
+        return f"1 {domain_name} 0.0.0.0 {query_id} nx"
 
 
 

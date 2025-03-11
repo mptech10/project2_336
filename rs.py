@@ -20,7 +20,7 @@ def handle_request(data, client_address, server_socket, rs_database):
 
     _, domain, query_id, query_type = parts
     domain_parts = domain.split('.')
-    tld = domain_parts[-1] 
+    tld = domain_parts[-1].lower()
 
     print(f"Received query for: {domain}, TLD: {tld}")  
 
