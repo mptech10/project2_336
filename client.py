@@ -19,8 +19,8 @@ def iterative_resolution(root_server, port, domain_name, query_id):
 
         if flag == "ns":
             #extract the TLD's server's host name and port and send query to that server instead 
-            tld_hostname, tld_port = tld_server.split(":")
-            tld_port = int(tld_port)
+            tld_hostname = tld_server
+            tld_port = int(port)
 
             return send_query(tld_hostname, tld_port, domain_name, "it", query_id)
         else:
