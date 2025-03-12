@@ -33,7 +33,6 @@ def handle_request(data, client_address, server_socket, rs_database):
 
     if domain.lower() in rs_database:
         response = f"1 {domain} {rs_database[domain]} {query_id} aa"  
-
     elif tld in rs_database:
         tld_hostname = rs_database[tld]
 
