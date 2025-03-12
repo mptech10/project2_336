@@ -12,6 +12,13 @@ def load_rs_database(filename):
     print(f"Loaded database: {database}") 
     return database
 
+def send_query(server_host, port, domain_name, query_type, query_id):
+    """Send a DNS query to a specific server."""
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client_socket:
+        message = f"0 {domain_name} {query_id} {query_type}"
+        client_socket.sendto(message.encode(), (server_host, port))
+        response, _ = client_socket.recvfrom(1024)
+        return response.decode()
 
 def handle_request(data, client_address, server_socket, rs_database):
     parts = data.split()
@@ -28,8 +35,25 @@ def handle_request(data, client_address, server_socket, rs_database):
         response = f"1 {domain} {rs_database[domain]} {query_id} aa"  
 
     elif tld in rs_database:
-        print(f"Forwarding {domain} to TLD server: {rs_database[tld]}")  
-        response = f"1 {domain} {rs_database[tld]} {query_id} ns"  
+        tld_hostname = rs_database[tld]
+
+        if query_type == "it":
+            #iterative resolution - redirect client to TLD server
+            response = f"1 {domain} {tld_hostname} {query_id} ns"
+        else:
+            #recursive resolution - forward query to TLD server
+            tld_port = int(sys.argv[1])
+            tld_response = send_query(tld_hostname, tld_port, domain, "rd", query_id)
+
+            tld_parts = tld_response.split()
+
+            if len(tld_parts) == 5:
+                _, domain, ip_address, query_id, flag = tld_parts
+                if flag == "aa":
+                    #recursive queries which are successfully resolved should result in the ra flag set
+                    response = f"1 {domain} {ip_address} {query_id} ra"
+                else:
+                    response = tld_response
     else:  
         response = f"1 {domain} 0.0.0.0 {query_id} nx" 
 
