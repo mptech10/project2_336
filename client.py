@@ -33,13 +33,12 @@ def iterative_resolution(root_server, port, domain_name, query_id):
 
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python3 client.py <root_server_host> <port> <query_type>")
+    if len(sys.argv) != 3:
+        print("Usage: python3 client.py <root_server_host> <port>")
         sys.exit(1)
 
     root_server = sys.argv[1]
     port = int(sys.argv[2])
-    query_type = sys.argv[3]
 
     try:
         with open("hostnames.txt", "r") as file:
@@ -54,7 +53,7 @@ def main():
     for i, (domain, query_flag) in enumerate(queries, start=1):
         if query_flag == "rd":  # Recursive query
             response = send_query(root_server, port, domain, "rd", i)
-            print(f"response from it: {response}")
+            #print(f"response from it: {response}")
         elif query_flag == "it":  # Iterative query
             response = iterative_resolution(root_server, port, domain, i)
             #print(f"response from it: {response}")
