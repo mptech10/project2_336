@@ -8,8 +8,9 @@ def load_rs_database(filename):
         for line in file:
             parts = line.strip().split()
             if len(parts) == 2:
-                database[parts[0]] = parts[1]  
-    print(f"Loaded database: {database}") 
+                #the case of keys don't matter
+                database[parts[0].lower()] = parts[1]
+    print(f"Loaded database: {database}")
     return database
 
 def send_query(server_host, port, domain_name, query_type, query_id):
@@ -23,24 +24,28 @@ def send_query(server_host, port, domain_name, query_type, query_id):
 def handle_request(data, client_address, server_socket, rs_database):
     parts = data.split()
     if len(parts) != 4:
-        return 
+        return
 
     _, domain, query_id, query_type = parts
     domain_parts = domain.split('.')
-    tld = domain_parts[-1].lower()
+    tld = domain_parts[-1]
 
-    print(f"Received query for: {domain}, TLD: {tld}")  
+    domain_lower = domain.lower()
+    tld_lower = tld.lower()
 
-    if domain.lower() in rs_database:
-        response = f"1 {domain} {rs_database[domain]} {query_id} aa"  
-    elif tld in rs_database:
-        tld_hostname = rs_database[tld]
+    print(f"Received query for: {domain}, TLD: {tld}")
+
+    if domain_lower in rs_database:
+        ip_address = rs_database[domain_lower]
+        response = f"1 {domain} {ip_address} {query_id} aa"
+    elif tld_lower in rs_database:
+        tld_hostname = rs_database[tld_lower]
 
         if query_type == "it":
-            #iterative resolution - redirect client to TLD server
+            # Iterative resolution - redirect client to TLD server
             response = f"1 {domain} {tld_hostname} {query_id} ns"
         else:
-            #recursive resolution - forward query to TLD server
+            # Recursive resolution - forward query to TLD server
             tld_port = int(sys.argv[1])
             tld_response = send_query(tld_hostname, tld_port, domain, "rd", query_id)
 
@@ -49,19 +54,18 @@ def handle_request(data, client_address, server_socket, rs_database):
             if len(tld_parts) == 5:
                 _, domain, ip_address, query_id, flag = tld_parts
                 if flag == "aa":
-                    #recursive queries which are successfully resolved should result in the ra flag set
+                    # Recursive queries which are successfully resolved should result in the ra flag set
                     response = f"1 {domain} {ip_address} {query_id} ra"
                 else:
                     response = tld_response
-    else:  
-        response = f"1 {domain} 0.0.0.0 {query_id} nx" 
+    else:
+        response = f"1 {domain} 0.0.0.0 {query_id} nx"
 
-    print(f"Response: {response}")  
+    print(f"Response: {response}")
     server_socket.sendto(response.encode(), client_address)
 
     with open("rsresponses.txt", "a") as output:
         output.write(response + "\n")
-
 
 def main():
     if len(sys.argv) != 2:

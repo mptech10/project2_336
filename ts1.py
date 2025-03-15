@@ -8,7 +8,7 @@ def load_ts_database(filename):
         for line in file:
             parts = line.strip().split()
             if len(parts) == 2:
-                database[parts[0]] = parts[1]  
+                database[parts[0].lower()] = parts[1]  
     return database
 
 def handle_request(data, client_address, server_socket, ts_database):
@@ -16,12 +16,13 @@ def handle_request(data, client_address, server_socket, ts_database):
     parts = data.split()
     if len(parts) != 4:
         return 
-
+    
     _, domain, query_id, _ = parts
 
-    #handling case insensitivity 
-    if domain.lower() in ts_database:
-        response = f"1 {domain} {ts_database[domain.lower()]} {query_id} aa"
+    domain_lower = domain.lower()
+
+    if domain_lower in ts_database:
+        response = f"1 {domain} {ts_database[domain_lower]} {query_id} aa"
     else:
         response = f"1 {domain} 0.0.0.0 {query_id} nx"
 
